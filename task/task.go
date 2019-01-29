@@ -3,18 +3,18 @@ package task
 import (
 	"encoding/csv"
 	"fmt"
-  "io/ioutil"
+	"io/ioutil"
 	"log"
 	"os"
-  "path"
+	"path"
 	"strconv"
-  "strings"
+	"strings"
 )
 
 var (
-  CSV_PARSE_MSG = "Parsing the CSV file failed."
-  HOMEDIR string = os.Getenv("HOME")
-  TASKFILE_PATH string = path.Join(HOMEDIR, "tl.csv")
+	CSV_PARSE_MSG        = "Parsing the CSV file failed."
+	HOMEDIR       string = os.Getenv("HOME")
+	TASKFILE_PATH string = path.Join(HOMEDIR, "tl.csv")
 )
 
 type Task struct {

@@ -68,14 +68,14 @@ func ArgsToAction() *Action {
 func PrintTasks(tasks []task.Task) {
 	fmt.Printf("total tasks: %d\n", len(tasks))
 	for i, task := range tasks {
-    var icon string
-    if task.Completed {
-      icon = "✓"
-    } else {
-      icon = "✖"
-    }
-		fmt.Printf("(%d) %s ", i + 1, task.Text)
-    fmt.Print(icon)
-    fmt.Print("\n")
+		var icon string
+		if task.Completed {
+			icon = "✓"
+		} else {
+			icon = "✖"
+		}
+		fmt.Printf("(%d) %s ", i+1, task.Text)
+		fmt.Print(icon)
+		fmt.Print("\n")
 	}
 }
