@@ -51,7 +51,12 @@ func recordsToTasks(records [][]string) []Task {
 
 }
 
-func writeTasksToFile(tasks []Task, filename string) {
+
+func writeOutTaskfile(tasks []Task, filename string) {
+  headers := make([]string, 2)
+  headers[0] = "NAME"
+  headers[1] = "COMPLETED"
+
 
 	if err := os.Truncate(filename, 0); err != nil {
 		log.Fatalln(CSV_FILE_TRUNCATE_FAILED)
@@ -61,6 +66,10 @@ func writeTasksToFile(tasks []Task, filename string) {
 	check(err, CSV_FILE_APPEND_FAILED)
 
 	w := csv.NewWriter(f)
+
+  if err := w.Write(headers); err != nil {
+			log.Fatalln(CSV_FILE_WRITE_FAILED)
+  }
 
 	for _, task := range tasks {
 		record := make([]string, 2)
@@ -128,7 +137,7 @@ func UpdateTask(index int, update Task, filename string) {
 
 	tasks[index].Completed = !tasks[index].Completed
 
-	writeTasksToFile(tasks, filename)
+	writeOutTaskfile(tasks, filename)
 
 	return
 

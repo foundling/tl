@@ -27,6 +27,15 @@ var (
 	TASKFILE_PATH string = path.Join(HOMEDIR, "tl.csv")
 )
 
+func init() {
+  // if file doesn't exist, write headers
+  if _, err := os.Stat(TASKFILE_PATH); os.IsNotExist(err) {
+    f, err := os.OpenFile(TASKFILE_PATH, os.O_RDWR| os.O_CREATE, 0755)
+    check
+  }
+  // if file exists, parse it, looking for <string,boolean,date> format 
+}
+
 func main() {
 
 	var cliAction *cli.Action = cli.ArgsToAction()
