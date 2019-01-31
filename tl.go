@@ -23,7 +23,7 @@ const USAGE_TEXT string = `tl usage:
 `
 
 var (
-  HOMEDIR = os.Getenv("HOME")
+	HOMEDIR              = os.Getenv("HOME")
 	TASKFILE_PATH string = path.Join(HOMEDIR, "tl.csv")
 )
 
