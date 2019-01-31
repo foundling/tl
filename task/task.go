@@ -12,9 +12,12 @@ import (
 )
 
 var (
-	CSV_PARSE_MSG        = "Parsing the CSV file failed."
-	HOMEDIR       string = os.Getenv("HOME")
-	TASKFILE_PATH string = path.Join(HOMEDIR, "tl.csv")
+	CSV_PARSE_FAILED                = "Failed to parse your CSV file."
+	CSV_FILE_NOT_FOUND              = "Failed to parse your CSV file."
+	CSV_FILE_APPEND_FAILED          = "Failed to append to your CSV file."
+	CSV_FILE_TRUNCATE_FAILED        = "Failed to overwrite your CSV file."
+	CSV_FILE_WRITE_FAILED           = "Failed to write to your CSV file."
+	TASKFILE_PATH            string = path.Join(os.Getenv("HOME"), "tl.csv")
 )
 
 type Task struct {
@@ -51,11 +54,11 @@ func recordsToTasks(records [][]string) []Task {
 func writeTasksToFile(tasks []Task, filename string) {
 
 	if err := os.Truncate(filename, 0); err != nil {
-		log.Fatalln("Could not truncate the file")
+		log.Fatalln(CSV_FILE_TRUNCATE_FAILED)
 	}
 
 	f, err := os.OpenFile(filename, os.O_RDWR|os.O_CREATE, 0755)
-	check(err, "Could not open file for appending.")
+	check(err, CSV_FILE_APPEND_FAILED)
 
 	w := csv.NewWriter(f)
 
@@ -64,7 +67,7 @@ func writeTasksToFile(tasks []Task, filename string) {
 		record[0] = task.Text
 		record[1] = strconv.FormatBool(task.Completed)
 		if err := w.Write(record); err != nil {
-			log.Fatalln("Could not write to file.")
+			log.Fatalln(CSV_FILE_WRITE_FAILED)
 		}
 	}
 
@@ -80,7 +83,7 @@ func GetTasksFromFile(filename string) []Task {
 
 	csvReader := csv.NewReader(strings.NewReader(string(taskFileBytes)))
 	records, err := csvReader.ReadAll()
-	check(err, CSV_PARSE_MSG)
+	check(err, CSV_PARSE_FAILED)
 
 	tasks := recordsToTasks(records)
 
@@ -95,11 +98,11 @@ func AppendTask(task Task, filename string) {
 	record[1] = strconv.FormatBool(task.Completed)
 
 	f, err := os.OpenFile(filename, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-	check(err, "Could not open file for appending.")
+	check(err, CSV_FILE_APPEND_FAILED)
 
 	w := csv.NewWriter(f)
 	if err := w.Write(record); err != nil {
-		log.Fatalln("Could not write to file.")
+		log.Fatalln(CSV_FILE_WRITE_FAILED)
 	}
 
 	w.Flush()
@@ -141,11 +144,11 @@ func DeleteTask(index int, filename string) {
 	tasks = append(tasks[:index], tasks[index+1:]...)
 
 	if err := os.Truncate(filename, 0); err != nil {
-		log.Fatalln("Could not truncate the file")
+		log.Fatalln(CSV_FILE_TRUNCATE_FAILED)
 	}
 
 	f, err := os.OpenFile(filename, os.O_RDWR|os.O_CREATE, 0755)
-	check(err, "Could not open file for appending.")
+	check(err, CSV_FILE_APPEND_FAILED)
 
 	w := csv.NewWriter(f)
 	for _, task := range tasks {
@@ -153,7 +156,7 @@ func DeleteTask(index int, filename string) {
 		record[0] = task.Text
 		record[1] = strconv.FormatBool(task.Completed)
 		if err := w.Write(record); err != nil {
-			log.Fatalln("Could not write to file.")
+			log.Fatalln(CSV_FILE_WRITE_FAILED)
 		}
 	}
 

@@ -8,16 +8,28 @@ import (
 	"tl/task"
 )
 
+const USAGE_TEXT string = `tl usage:
+    add:
+      -a <task text>
+
+    update:
+      -u <task #> [-t updated task text] [-c]
+
+    delete:
+      -d <task #>
+
+    sort:
+      -s
+`
+
 var (
-	HOMEDIR              = os.Getenv("HOME")
+  HOMEDIR = os.Getenv("HOME")
 	TASKFILE_PATH string = path.Join(HOMEDIR, "tl.csv")
-	CSV_PARSE_MSG string = "There was an error parsing your csv file."
-	HELP_TEXT            = "tl [options]"
 )
 
 func main() {
 
-	cliAction := cli.ArgsToAction()
+	var cliAction *cli.Action = cli.ArgsToAction()
 
 	switch cliAction.ActionType {
 	case "read":
@@ -29,7 +41,7 @@ func main() {
 	case "update":
 		task.UpdateTask(cliAction.TaskIndex-1, cliAction.Task, TASKFILE_PATH)
 	case "help":
-		fmt.Println(HELP_TEXT)
+		fmt.Println(USAGE_TEXT)
 	}
 
 }

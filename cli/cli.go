@@ -15,6 +15,12 @@ type Action struct {
 
 func ArgsToAction() *Action {
 
+	/*
+	  flag.Usage = func() {
+	    fmt.Println("BAD STUFF HAPPENED")
+	  }
+	*/
+
 	cliAction := Action{}
 
 	// append a new task
@@ -28,9 +34,14 @@ func ArgsToAction() *Action {
 	// delete existing task
 	deleteIndex := flag.Int("d", -1, "task number to delete")
 
+	// help
+	usage := flag.Bool("h", false, "usage")
+
 	flag.Parse()
 
-	if len(*taskText) > 0 {
+	if *usage {
+		cliAction.ActionType = "help"
+	} else if len(*taskText) > 0 {
 
 		cliAction.ActionType = "add"
 		cliAction.Task.Text = *taskText
