@@ -20,7 +20,7 @@ type Action struct {
 	Task           task.Task
 }
 
-func initCli(taskFilepath string) [][]string {
+func InitCli(taskFilepath string) [][]string {
 
 	// if file doesn't exist, create it, write headers
 	if _, err := os.Stat(taskFilepath); os.IsNotExist(err) {
@@ -39,9 +39,9 @@ func initCli(taskFilepath string) [][]string {
 	}
 
 	records := task.ParseTaskfile(string(taskfileBytes))
-	task.validateRecords(records)
+	task.ValidateRecords(records)
 
-	return &records
+	return records
 
 }
 

@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"strings"
 	"tl/cli"
 	"tl/task"
 )
@@ -24,28 +23,29 @@ const USAGE_TEXT string = `tl usage:
 func main() {
 
 	cliAction := cli.ArgsToAction()
-	records := cli.initCli(cliAction.TaskFilepath)
+	command := cliAction.ActionType
+	records := cli.InitCli(cliAction.TaskFilepath)
 	headers := records[0]
-	currentTasklist := records[1:]
+	currentTasklist := task.RecordsToTasks(records[1:])
 	newTasklist := make([]task.Task, 0)
 
-	switch cliAction.ActionType {
+	switch command {
 	case "print":
 		cli.PrintTasks(currentTasklist)
 	case "printv":
 		cli.PrintTasksVerbose(currentTasklist)
 	case "add":
-		newTasklist := task.AppendTask(cliAction, currentTasklist)
+		newTasklist = append(currentTasklist, cliAction.Task)
 	case "delete":
-		newTasklist := task.DeleteTask(cliAction, currentTasklist)
+		newTasklist = task.DeleteTask(currentTasklist, cliAction.TaskIndex-1)
 	case "update":
-		newTasklist := task.UpdateTask(cliAction, currentTasklist)
+		newTasklist = task.UpdateTask(currentTasklist, cliAction.Task, cliAction.TaskIndex-1, cliAction.ToggleComplete)
 	case "help":
 		fmt.Println(USAGE_TEXT)
 	}
 
-	if len(newTasklist) > 0 {
-		WriteTasksToDisk(headers, newTasklist, cliAction.TaskFilepath)
+	if command == "add" || command == "delete" || command == "update" {
+		task.WriteTasksToDisk(headers, newTasklist, cliAction.TaskFilepath)
 	}
 
 }

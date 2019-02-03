@@ -8,7 +8,6 @@ import (
 	"path"
 	"strconv"
 	"strings"
-	"tl/cli"
 )
 
 var (
@@ -35,7 +34,7 @@ func check(e error, msg ...string) {
 	}
 }
 
-func validateRecords(records [][]string) {
+func ValidateRecords(records [][]string) {
 
 	if len(records) < 1 {
 		log.Fatal("task file has no headers.")
@@ -51,7 +50,7 @@ func validateRecords(records [][]string) {
 
 }
 
-func recordsToTasks(records [][]string) []Task {
+func RecordsToTasks(records [][]string) []Task {
 
 	tasks := make([]Task, len(records))
 
@@ -81,7 +80,7 @@ func WriteTasksToDisk(headers []string, tasks []Task, filepath string) {
 
 	records[0] = make([]string, len(headers))
 	records[0][0] = "Name"
-	records[0][1] = "Complete"
+	records[0][1] = "Completed"
 
 	for i, task := range tasks {
 		records[i+1] = make([]string, len(headers))
@@ -96,34 +95,26 @@ func WriteTasksToDisk(headers []string, tasks []Task, filepath string) {
 
 }
 
-func AppendTask(action *cli.cliAction, tasks []Task.task) {
+func AppendTask(task Task, tasks []Task) []Task {
 
-	task := action.Task
 	return append(tasks, task)
 
 }
 
-func DeleteTask(action *cli.cliAction, tasks []Task.task) {
-
-	index := action.TaskIndex
-	filepath := action.TaskFilepath
+func DeleteTask(tasks []Task, index int) []Task {
 
 	if index < 0 || index >= len(tasks) {
-		return
+		return tasks
 	}
 
 	return append(tasks[:index], tasks[index+1:]...)
 
 }
 
-func UpdateTask(action *cli.cliAction, tasks []Task.task) {
-
-	index := cliAction.TaskIndex
-	toggleComplete := cliAction.ToggleComplete
-	task := cliAction.Task
+func UpdateTask(tasks []Task, task Task, index int, toggleComplete bool) []Task {
 
 	if index < 0 || index >= len(tasks) {
-		return
+		return tasks
 	}
 
 	if len(task.Text) > 0 {
