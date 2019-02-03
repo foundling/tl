@@ -1,6 +1,6 @@
 # tl
 
-tl is a simple command-line task list application written in Go.
+tl is a simple command-line tasklist application written in Go.
 
 ## Installation
 
