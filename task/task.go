@@ -18,7 +18,7 @@ var (
 	CSV_FILE_TRUNCATE_FAILED        = "Failed to overwrite your CSV file."
 	CSV_FILE_WRITE_FAILED           = "Failed to write to your CSV file."
 	TASKFILE_PATH            string = path.Join(os.Getenv("HOME"), "tl.csv")
-	HEADER_LINE              string = "Name,Completed"
+  HEADER_LINE              string = "Name,Completed\n"
 )
 
 type Task struct {
@@ -37,7 +37,6 @@ func check(e error, msg ...string) {
 
 func recordsToTasks(records [][]string) []Task {
 
-	// todo: return poitner
 	tasks := make([]Task, len(records))
 
 	for index, record := range records {
@@ -81,21 +80,28 @@ func writeOutTaskfile(tasks []Task, filename string) {
 
 }
 
-func GetTasksFromFile(filename string) []Task {
+func ParseTaskfile(content *string) []string {
 
-	// todo: return pointer
-	taskFileBytes, err := ioutil.ReadFile(TASKFILE_PATH)
-	check(err)
-
-	csvReader := csv.NewReader(strings.NewReader(string(taskFileBytes)))
+	csvReader := csv.NewReader(strings.NewReader(content))
 	records, err := csvReader.ReadAll()
 	check(err, CSV_PARSE_FAILED)
 
-	tasks := recordsToTasks(records[1:])
-
-	return tasks
+	return records
 
 }
+
+func getTasksFromFile(filename string) []Task {
+
+	taskfileBytes, err := ioutil.ReadFile(TASKFILE_PATH)
+	check(err)
+
+  taskfileContent := string(taskfileBytes)
+  records := ParseTaskfile(taskfileContent)
+
+  return records[1:]
+
+}
+
 
 func AppendTask(task Task, filename string) {
 
@@ -144,9 +150,12 @@ func UpdateTask(index int, newText string, toggleComplete bool, filename string)
 
 func DeleteTask(index int, filename string) {
 
+	if index < 0 {
+		return
+	}
+
 	tasks := GetTasksFromFile(filename)
 
-	// index is user-supplied index - 1
 	if index >= len(tasks) {
 		return
 	}
