@@ -25,8 +25,8 @@ func main() {
 
 	cliAction := cli.ArgsToAction()
 	records := cli.initCli(cliAction.TaskFilepath)
-  headers := records[0]
-  currentTasklist := records[1:]
+	headers := records[0]
+	currentTasklist := records[1:]
 	newTasklist := make([]task.Task, 0)
 
 	switch cliAction.ActionType {

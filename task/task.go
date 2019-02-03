@@ -8,7 +8,7 @@ import (
 	"path"
 	"strconv"
 	"strings"
-  "tl/cli"
+	"tl/cli"
 )
 
 var (

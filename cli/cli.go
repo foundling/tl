@@ -3,7 +3,7 @@ package cli
 import (
 	"flag"
 	"fmt"
-  "io/ioutil"
+	"io/ioutil"
 	"log"
 	"os"
 	"path"
