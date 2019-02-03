@@ -25,6 +25,7 @@ tl [-aduv]
 ## Examples
 
 ```
+# add a task 
 $ tl -a "do laundry"
 $ tl 
 total 1
@@ -32,8 +33,13 @@ total 1
 
 ...
 
+# add a task and mark it complete 
 $ tl -a "triage github issues" -c
 $ tl -a "vote"
+
+...
+
+# print tasks
 $ tl
 total 2
 1: do laundry ✖
@@ -42,6 +48,7 @@ total 2
 
 ...
 
+# print tasks in verbose format
 $ tl -v
 total 3
 
@@ -55,4 +62,13 @@ complete
 ~~~~~~~~~
 2: triage github issues ✓
 
+...
+
+# update a task
+$ tl -u 1 -t "do laundry (wash new jeans separately)"
+$ tl
+total 3
+1: do laundry (wash new jeans separately) ✖
+2: triage github issues ✓
+3: vote ✖
 ```
