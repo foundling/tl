@@ -3,6 +3,7 @@ package cli
 import (
 	"flag"
 	"fmt"
+  "io/ioutil"
 	"log"
 	"os"
 	"path"
@@ -17,6 +18,31 @@ type Action struct {
 	TaskFilepath   string
 	TaskIndex      int
 	Task           task.Task
+}
+
+func initCli(taskFilepath string) [][]string {
+
+	// if file doesn't exist, create it, write headers
+	if _, err := os.Stat(taskFilepath); os.IsNotExist(err) {
+
+		if f, err := os.OpenFile(taskFilepath, os.O_RDWR|os.O_CREATE, 0755); err != nil {
+			log.Fatal(err)
+		} else {
+			f.WriteString(task.HEADER_LINE)
+		}
+	}
+
+	// filepath to string
+	taskfileBytes, err := ioutil.ReadFile(taskFilepath)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	records := task.ParseTaskfile(string(taskfileBytes))
+	task.validateRecords(records)
+
+	return &records
+
 }
 
 func ArgsToAction() *Action {

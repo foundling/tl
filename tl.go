@@ -1,11 +1,7 @@
 package main
 
 import (
-	"encoding/csv"
 	"fmt"
-	"io/ioutil"
-	"log"
-	"os"
 	"strings"
 	"tl/cli"
 	"tl/task"
@@ -25,67 +21,31 @@ const USAGE_TEXT string = `tl usage:
       delete task by task #
 `
 
-func validateTaskfile(records []string) {
-
-  records := task.ParseTaskfile(fileContent)
-
-  if len(records) < 1 {
-    log.Fatal("task file has no records.")
-  }
-
-  if records[0][0] != "Name" {
-    log.Fatal(`task file not valid. First header field should be "Name".`)
-  }
-
-  if records[0][1] != "Completed" {
-    log.Fatal(`task file not valid. Second header field should be "Complete".`)
-  }
-
-}
-
-func initCli(taskFilepath string) [][]string {
-
-  // if file doesn't exist, create it, write headers
-	if _, err := os.Stat(taskFilepath); os.IsNotExist(err) {
-
-		if f, err := os.OpenFile(taskFilepath, os.O_RDWR|os.O_CREATE, 0755); err != nil {
-			log.Fatal(err)
-		} else {
-			f.WriteString(task.HEADER_LINE)
-		}
-	}
-
-  // filepath to string
-	taskfileBytes, err := ioutil.ReadFile(taskFilepath)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-  records := ParseTaskfile(string(taskfileBytes))
-  validateTaskfile(records)
-
-  return records
-
-}
-
 func main() {
 
-	var cliAction *cli.Action = cli.ArgsToAction()
-  tasks := initCli(cliAction.TaskFilepath)
+	cliAction := cli.ArgsToAction()
+	records := cli.initCli(cliAction.TaskFilepath)
+  headers := records[0]
+  currentTasklist := records[1:]
+	newTasklist := make([]task.Task, 0)
 
 	switch cliAction.ActionType {
 	case "print":
-    cli.PrintTasks(tasks)
+		cli.PrintTasks(currentTasklist)
 	case "printv":
-		cli.PrintTasksVerbose(tasks)
+		cli.PrintTasksVerbose(currentTasklist)
 	case "add":
-		task.AppendTask(cliAction.Task, cliAction.TaskFilepath)
+		newTasklist := task.AppendTask(cliAction, currentTasklist)
 	case "delete":
-		task.DeleteTask(cliAction.TaskIndex-1, cliAction.TaskFilepath)
+		newTasklist := task.DeleteTask(cliAction, currentTasklist)
 	case "update":
-		task.UpdateTask(cliAction.TaskIndex-1, cliAction.Task.Text, cliAction.ToggleComplete, cliAction.TaskFilepath)
+		newTasklist := task.UpdateTask(cliAction, currentTasklist)
 	case "help":
 		fmt.Println(USAGE_TEXT)
+	}
+
+	if len(newTasklist) > 0 {
+		WriteTasksToDisk(headers, newTasklist, cliAction.TaskFilepath)
 	}
 
 }
