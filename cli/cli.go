@@ -108,9 +108,9 @@ func PrintTasksVerbose(tasks []task.Task) {
 
 	fmt.Println("total", len(tasks))
 
-  if len(tasks) == 0 {
-    return
-  }
+	if len(tasks) == 0 {
+		return
+	}
 
 	fmt.Println("\nto do")
 	fmt.Println("~~~~~~")
@@ -124,7 +124,7 @@ func PrintTasksVerbose(tasks []task.Task) {
 			}
 			fmt.Printf("%d: %s ", i+1, task.Text)
 			fmt.Print(icon)
-      fmt.Println("")
+			fmt.Println("")
 		}
 	}
 
