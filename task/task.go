@@ -18,6 +18,7 @@ var (
 	CSV_FILE_TRUNCATE_FAILED        = "Failed to overwrite your CSV file."
 	CSV_FILE_WRITE_FAILED           = "Failed to write to your CSV file."
 	TASKFILE_PATH            string = path.Join(os.Getenv("HOME"), "tl.csv")
+  HEADER_LINE              string = "Name,Completed"
 )
 
 type Task struct {
@@ -36,6 +37,7 @@ func check(e error, msg ...string) {
 
 func recordsToTasks(records [][]string) []Task {
 
+  // todo: return poitner
 	tasks := make([]Task, len(records))
 
 	for index, record := range records {
@@ -53,40 +55,37 @@ func recordsToTasks(records [][]string) []Task {
 
 
 func writeOutTaskfile(tasks []Task, filename string) {
-  headers := make([]string, 2)
-  headers[0] = "NAME"
-  headers[1] = "COMPLETED"
-
 
 	if err := os.Truncate(filename, 0); err != nil {
 		log.Fatalln(CSV_FILE_TRUNCATE_FAILED)
 	}
 
-	f, err := os.OpenFile(filename, os.O_RDWR|os.O_CREATE, 0755)
+	f, err := os.OpenFile(filename, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	check(err, CSV_FILE_APPEND_FAILED)
 
-	w := csv.NewWriter(f)
+  records := make([][]string, len(tasks)+1)
 
-  if err := w.Write(headers); err != nil {
-			log.Fatalln(CSV_FILE_WRITE_FAILED)
+  records[0] = make([]string, 2)
+  records[0][0] = "Name"
+  records[0][1] = "Complete"
+
+
+  for i, task := range tasks {
+    records[i + 1] = make([]string, 2)
+    records[i + 1][0] = task.Text
+    records[i + 1][1] = strconv.FormatBool(task.Completed)
   }
 
-	for _, task := range tasks {
-		record := make([]string, 2)
-		record[0] = task.Text
-		record[1] = strconv.FormatBool(task.Completed)
-		if err := w.Write(record); err != nil {
-			log.Fatalln(CSV_FILE_WRITE_FAILED)
-		}
-	}
+	w := csv.NewWriter(f)
+  if err := w.WriteAll(records); err != nil {
+    log.Fatalln(CSV_FILE_WRITE_FAILED)
+  }
 
-	w.Flush()
-
-	return
 }
 
 func GetTasksFromFile(filename string) []Task {
 
+  // todo: return pointer
 	taskFileBytes, err := ioutil.ReadFile(TASKFILE_PATH)
 	check(err)
 
@@ -94,7 +93,7 @@ func GetTasksFromFile(filename string) []Task {
 	records, err := csvReader.ReadAll()
 	check(err, CSV_PARSE_FAILED)
 
-	tasks := recordsToTasks(records)
+  tasks := recordsToTasks(records[1:])
 
 	return tasks
 
@@ -119,7 +118,7 @@ func AppendTask(task Task, filename string) {
 	return
 }
 
-func UpdateTask(index int, update Task, filename string) {
+func UpdateTask(index int, newText string, toggleComplete bool, filename string) {
 
 	if index < 0 {
 		return
@@ -131,11 +130,13 @@ func UpdateTask(index int, update Task, filename string) {
 		return
 	}
 
-	if len(update.Text) > 0 {
-		tasks[index].Text = update.Text
+	if len(newText) > 0 {
+		tasks[index].Text = newText
 	}
 
-	tasks[index].Completed = !tasks[index].Completed
+	if toggleComplete {
+		tasks[index].Completed = !tasks[index].Completed
+	}
 
 	writeOutTaskfile(tasks, filename)
 
@@ -146,30 +147,14 @@ func UpdateTask(index int, update Task, filename string) {
 func DeleteTask(index int, filename string) {
 
 	tasks := GetTasksFromFile(filename)
+
+  // index is user-supplied index - 1
 	if index >= len(tasks) {
 		return
 	}
 
 	tasks = append(tasks[:index], tasks[index+1:]...)
 
-	if err := os.Truncate(filename, 0); err != nil {
-		log.Fatalln(CSV_FILE_TRUNCATE_FAILED)
-	}
+  writeOutTaskfile(tasks, filename)
 
-	f, err := os.OpenFile(filename, os.O_RDWR|os.O_CREATE, 0755)
-	check(err, CSV_FILE_APPEND_FAILED)
-
-	w := csv.NewWriter(f)
-	for _, task := range tasks {
-		record := make([]string, 2)
-		record[0] = task.Text
-		record[1] = strconv.FormatBool(task.Completed)
-		if err := w.Write(record); err != nil {
-			log.Fatalln(CSV_FILE_WRITE_FAILED)
-		}
-	}
-
-	w.Flush()
-
-	return
 }

@@ -1,54 +1,74 @@
 package main
 
 import (
+  "encoding/csv"
 	"fmt"
+  "io/ioutil"
+	"log"
 	"os"
-	"path"
+  "strings"
 	"tl/cli"
-	"tl/task"
+  "tl/task"
 )
 
 const USAGE_TEXT string = `tl usage:
-    add:
-      -a <task text>
-
-    update:
-      -u <task #> [-t updated task text] [-c]
-
-    delete:
-      -d <task #>
-
-    sort:
-      -s
+  tl [-aduv]
+    -v 
+      print tasks in verbose format
+    -a <text>
+    -u <task #> [-t updated task text] [-c]
+      update task by task #
+      -t <task text>
+      -c
+        mark complete
+    -d <task #>
+      delete task by task #
 `
 
-var (
-	HOMEDIR              = os.Getenv("HOME")
-	TASKFILE_PATH string = path.Join(HOMEDIR, "tl.csv")
-)
-
-func init() {
-  // if file doesn't exist, write headers
-  if _, err := os.Stat(TASKFILE_PATH); os.IsNotExist(err) {
-    f, err := os.OpenFile(TASKFILE_PATH, os.O_RDWR| os.O_CREATE, 0755)
-    check
+func validateTaskfile(fileContent string) {
+  r := csv.NewReader(strings.NewReader(fileContent))
+  if _, err := r.ReadAll(); err != nil {
+    log.Fatal(err)
   }
-  // if file exists, parse it, looking for <string,boolean,date> format 
+}
+
+func initCli(taskFilepath string) {
+
+  // if file doesn't exist, create it and write headers
+	if _, err := os.Stat(taskFilepath); os.IsNotExist(err) {
+
+		if f, err := os.OpenFile(taskFilepath, os.O_RDWR|os.O_CREATE, 0755); err != nil {
+			log.Fatal(err)
+		} else {
+			f.WriteString("Name,Completed\n")
+		}
+	}
+
+  taskfileBytes, err := ioutil.ReadFile(taskFilepath)
+  if err != nil {
+    log.Fatal(err)
+  }
+  validateTaskfile(string(taskfileBytes))
+
+
 }
 
 func main() {
 
 	var cliAction *cli.Action = cli.ArgsToAction()
+	initCli(cliAction.TaskFilepath)
 
 	switch cliAction.ActionType {
-	case "read":
-		cli.PrintTasks(task.GetTasksFromFile(TASKFILE_PATH))
+	case "print":
+		cli.PrintTasks(task.GetTasksFromFile(cliAction.TaskFilepath))
+  case "printv":
+		cli.PrintTasksVerbose(task.GetTasksFromFile(cliAction.TaskFilepath))
 	case "add":
-		task.AppendTask(cliAction.Task, TASKFILE_PATH)
+		task.AppendTask(cliAction.Task, cliAction.TaskFilepath)
 	case "delete":
-		task.DeleteTask(cliAction.TaskIndex-1, TASKFILE_PATH)
+		task.DeleteTask(cliAction.TaskIndex-1, cliAction.TaskFilepath)
 	case "update":
-		task.UpdateTask(cliAction.TaskIndex-1, cliAction.Task, TASKFILE_PATH)
+		task.UpdateTask(cliAction.TaskIndex-1, cliAction.Task.Text, cliAction.ToggleComplete, cliAction.TaskFilepath)
 	case "help":
 		fmt.Println(USAGE_TEXT)
 	}
