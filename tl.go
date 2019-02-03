@@ -30,21 +30,20 @@ func main() {
 	newTasklist := make([]task.Task, 0)
 
 	switch command {
+	case "help":
+		fmt.Println(USAGE_TEXT)
 	case "print":
 		cli.PrintTasks(currentTasklist)
 	case "printv":
 		cli.PrintTasksVerbose(currentTasklist)
 	case "add":
 		newTasklist = append(currentTasklist, cliAction.Task)
+		task.WriteTasksToDisk(headers, newTasklist, cliAction.TaskFilepath)
 	case "delete":
 		newTasklist = task.DeleteTask(currentTasklist, cliAction.TaskIndex-1)
+		task.WriteTasksToDisk(headers, newTasklist, cliAction.TaskFilepath)
 	case "update":
 		newTasklist = task.UpdateTask(currentTasklist, cliAction.Task, cliAction.TaskIndex-1, cliAction.ToggleComplete)
-	case "help":
-		fmt.Println(USAGE_TEXT)
-	}
-
-	if command == "add" || command == "delete" || command == "update" {
 		task.WriteTasksToDisk(headers, newTasklist, cliAction.TaskFilepath)
 	}
 

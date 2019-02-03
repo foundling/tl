@@ -32,7 +32,6 @@ func InitCli(taskFilepath string) [][]string {
 		}
 	}
 
-	// filepath to string
 	taskfileBytes, err := ioutil.ReadFile(taskFilepath)
 	if err != nil {
 		log.Fatal(err)
@@ -66,6 +65,7 @@ func ArgsToAction() *Action {
 	cliAction.TaskFilepath = *taskFilepath
 
 	if *usage {
+
 		// usage
 		cliAction.ActionType = "help"
 	} else if len(*taskText) > 0 {
