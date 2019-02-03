@@ -1,14 +1,14 @@
 package main
 
 import (
-  "encoding/csv"
+	"encoding/csv"
 	"fmt"
-  "io/ioutil"
+	"io/ioutil"
 	"log"
 	"os"
-  "strings"
+	"strings"
 	"tl/cli"
-  "tl/task"
+	"tl/task"
 )
 
 const USAGE_TEXT string = `tl usage:
@@ -26,15 +26,15 @@ const USAGE_TEXT string = `tl usage:
 `
 
 func validateTaskfile(fileContent string) {
-  r := csv.NewReader(strings.NewReader(fileContent))
-  if _, err := r.ReadAll(); err != nil {
-    log.Fatal(err)
-  }
+	r := csv.NewReader(strings.NewReader(fileContent))
+	if _, err := r.ReadAll(); err != nil {
+		log.Fatal(err)
+	}
 }
 
 func initCli(taskFilepath string) {
 
-  // if file doesn't exist, create it and write headers
+	// if file doesn't exist, create it and write headers
 	if _, err := os.Stat(taskFilepath); os.IsNotExist(err) {
 
 		if f, err := os.OpenFile(taskFilepath, os.O_RDWR|os.O_CREATE, 0755); err != nil {
@@ -44,12 +44,11 @@ func initCli(taskFilepath string) {
 		}
 	}
 
-  taskfileBytes, err := ioutil.ReadFile(taskFilepath)
-  if err != nil {
-    log.Fatal(err)
-  }
-  validateTaskfile(string(taskfileBytes))
-
+	taskfileBytes, err := ioutil.ReadFile(taskFilepath)
+	if err != nil {
+		log.Fatal(err)
+	}
+	validateTaskfile(string(taskfileBytes))
 
 }
 
@@ -61,7 +60,7 @@ func main() {
 	switch cliAction.ActionType {
 	case "print":
 		cli.PrintTasks(task.GetTasksFromFile(cliAction.TaskFilepath))
-  case "printv":
+	case "printv":
 		cli.PrintTasksVerbose(task.GetTasksFromFile(cliAction.TaskFilepath))
 	case "add":
 		task.AppendTask(cliAction.Task, cliAction.TaskFilepath)
