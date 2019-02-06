@@ -17,8 +17,11 @@ const USAGE_TEXT string = `tl usage:
       -t <task text>
       -c
         mark complete
-    -d <task #>
-      delete task by task #
+    -d <task #>,...[<task #>]
+      delete task by task #, comma-separated list allowed
+    -d <task #>..<task #>
+      delete task by task-range
+
 `
 
 func main() {

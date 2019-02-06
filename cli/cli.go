@@ -16,7 +16,7 @@ type Action struct {
 	ActionType     string
 	ToggleComplete bool
 	TaskFilepath   string
-	TaskIndex      int
+	TaskIndex      int // change to dynamic array of indexes to handle delete range case 
 	Task           task.Task
 }
 
@@ -55,7 +55,9 @@ func ArgsToAction() *Action {
 	newTaskText := flag.String("t", "", "task update text")
 	toggleComplete := flag.Bool("c", false, "toggle task complete status")
 
-	deleteIndex := flag.Int("d", -1, "task number to delete")
+  //flag becomes string, parse for ints
+	deleteString := flag.String("d", "", "task number to delete")
+
 	verbosePrint := flag.Bool("v", false, "print verbose information")
 
 	usage := flag.Bool("h", false, "usage")
@@ -97,15 +99,26 @@ func ArgsToAction() *Action {
 		cliAction.Task.Text = *newTaskText
 		cliAction.ToggleComplete = *toggleComplete
 
-	} else if *deleteIndex != -1 {
+	} else if len(*deleteString) > 0 {
 
-		// delete task
-		if *deleteIndex < -1 {
-			log.Fatal("Invalid task #")
-		}
+    rangeRe := regexp.MustCompile("^[0-9]+\\.\\.[0-9]+")
+    commaDelimRe := regexp.MustCompile("^([0-9],)+[0-9]$")
 
-		cliAction.ActionType = "delete"
-		cliAction.TaskIndex = *deleteIndex
+    isRange := re.MatchString(*deleteString)
+    isCommaDelim := re.MatchString(*deleteString)
+
+    if isRange {
+      // 1..4
+      cliAction.ActionType = "delete"
+
+    } else if isComaDelim {
+      // 1,4,7 -- no trailing comma allowed
+      cliAction.ActionType = "delete"
+
+    } else {
+      // no match, print help
+      cliAction.ActionType = "help"
+    }
 
 	} else {
 
