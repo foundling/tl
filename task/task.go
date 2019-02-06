@@ -64,7 +64,7 @@ func RecordsToTasks(records [][]string) []Task {
 
 	}
 
-  return tasks[:]
+	return tasks[:]
 
 }
 
@@ -98,24 +98,24 @@ func WriteTasksToDisk(headers []string, tasks []Task, filepath string) {
 
 func AppendTask(task Task, tasks []Task) []Task {
 
-  return append(tasks, task)[:]
+	return append(tasks, task)[:]
 
 }
 
 func DeleteTask(tasks []Task, index int) []Task {
 
 	if index < 0 || index >= len(tasks) {
-    return tasks[:]
+		return tasks[:]
 	}
 
-  return append(tasks[:index], tasks[index+1:]...)[:]
+	return append(tasks[:index], tasks[index+1:]...)[:]
 
 }
 
 func UpdateTask(tasks []Task, task Task, index int, toggleComplete bool) []Task {
 
 	if index < 0 || index >= len(tasks) {
-    return tasks[:]
+		return tasks[:]
 	}
 
 	if len(task.Text) > 0 {
@@ -126,7 +126,7 @@ func UpdateTask(tasks []Task, task Task, index int, toggleComplete bool) []Task 
 		tasks[index].Completed = !tasks[index].Completed
 	}
 
-  return tasks[:]
+	return tasks[:]
 
 }
 
@@ -136,6 +136,6 @@ func ParseTaskfile(content string) [][]string {
 	records, err := csvReader.ReadAll()
 	check(err, CSV_PARSE_FAILED)
 
-  return records[:]
+	return records[:]
 
 }
