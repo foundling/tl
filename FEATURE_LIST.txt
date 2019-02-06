@@ -1,0 +1,10 @@
+Documentation: 
+  - change installation instructions to use more granular go get flags, some people
+    may not want to fetch/install program all in one step.
+
+Allow multiple lists
+Allow config for multiple lists with the following types: 
+  - regular (modifiable, persistent)
+  - transient (delete after 2 days by default, but configurable)
+  - sticky (won't disappear unless you explicitly mark list for deletion, sorted separately in verbose mode)
+

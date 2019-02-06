@@ -40,7 +40,7 @@ func InitCli(taskFilepath string) [][]string {
 	records := task.ParseTaskfile(string(taskfileBytes))
 	task.ValidateRecords(records)
 
-	return records
+  return records[:]
 
 }
 
@@ -48,7 +48,8 @@ func ArgsToAction() *Action {
 
 	taskFilepath := flag.String("f", DEFAULT_FILEPATH, "alternate task data filepath to ~/tl.csv")
 
-	taskText := flag.String("a", "", "task text to add")
+	taskTextAppend := flag.String("a", "", "task text to append")
+  taskTextPrepend := flag.String("p","", "task to prepend")
 
 	updateIndex := flag.Int("u", -1, "task number to update")
 	newTaskText := flag.String("t", "", "task update text")
@@ -68,15 +69,22 @@ func ArgsToAction() *Action {
 
 		// usage
 		cliAction.ActionType = "help"
-	} else if len(*taskText) > 0 {
+	} else if len(*taskTextAppend) > 0 {
 
 		// add task
-		cliAction.ActionType = "add"
-		cliAction.Task.Text = *taskText
+		cliAction.ActionType = "append"
+		cliAction.Task.Text = *taskTextAppend
 		if *toggleComplete {
 			cliAction.Task.Completed = true
 		}
 
+  } else if len(*taskTextPrepend) > 0 {
+
+		cliAction.ActionType = "prepend"
+		cliAction.Task.Text = *taskTextPrepend
+		if *toggleComplete {
+			cliAction.Task.Completed = true
+		}
 	} else if *updateIndex != -1 {
 
 		// update task

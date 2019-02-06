@@ -10,7 +10,8 @@ const USAGE_TEXT string = `tl usage:
   tl [-aduv]
     -v 
       print tasks in verbose format
-    -a <text>
+    -a <task text to append to list>
+    -p <task text to prepend to list>
     -u <task #> [-t updated task text] [-c]
       update task by task #
       -t <task text>
@@ -36,8 +37,11 @@ func main() {
 		cli.PrintTasks(currentTasklist)
 	case "printv":
 		cli.PrintTasksVerbose(currentTasklist)
-	case "add":
+	case "append":
 		newTasklist = append(currentTasklist, cliAction.Task)
+		task.WriteTasksToDisk(headers, newTasklist, cliAction.TaskFilepath)
+	case "prepend":
+		newTasklist = append([]task.Task{cliAction.Task}, currentTasklist...)
 		task.WriteTasksToDisk(headers, newTasklist, cliAction.TaskFilepath)
 	case "delete":
 		newTasklist = task.DeleteTask(currentTasklist, cliAction.TaskIndex-1)
