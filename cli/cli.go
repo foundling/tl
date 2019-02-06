@@ -71,7 +71,7 @@ func ArgsToAction() *Action {
 		cliAction.ActionType = "help"
 	} else if len(*taskTextAppend) > 0 {
 
-		// add task
+		// add to back
 		cliAction.ActionType = "append"
 		cliAction.Task.Text = *taskTextAppend
 		if *toggleComplete {
@@ -80,6 +80,7 @@ func ArgsToAction() *Action {
 
 	} else if len(*taskTextPrepend) > 0 {
 
+		// add to front
 		cliAction.ActionType = "prepend"
 		cliAction.Task.Text = *taskTextPrepend
 		if *toggleComplete {
