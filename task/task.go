@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"path"
+  "sort"
 	"strconv"
 	"strings"
 )
@@ -102,13 +103,45 @@ func AppendTask(task Task, tasks []Task) []Task {
 
 }
 
-func DeleteTask(tasks []Task, index int) []Task {
+func DeleteTaskByIndex(tasks []Task, index int) []Task {
 
 	if index < 0 || index >= len(tasks) {
 		return tasks[:]
 	}
 
 	return append(tasks[:index], tasks[index+1:]...)[:]
+
+}
+
+func DeleteTasksByIndex(tasks []Task, indexes []int) []Task {
+
+  // sort and reverse indexes first
+  end := len(tasks)
+
+  for _, index := range sort.Reverse(sort.IntSlice(indexes)) {
+    tasks = append(tasks[:index], tasks[index+1:end]...)
+    end = index + 1
+  }
+
+  return tasks
+
+}
+
+func DeleteTasksByRange(tasks []Task, userStart int, userEnd int) []Task {
+
+  var last int
+  start := userStart - 1  // 0-index
+  end := userEnd - 1      // 0-index
+
+  if start < 0 || len(tasks) == 0 {
+    return tasks
+  }
+
+  if end >= len(tasks) {
+    last = len(tasks) - 1
+  }
+
+  return tasks[start:end+1]
 
 }
 

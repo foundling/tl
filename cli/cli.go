@@ -8,6 +8,9 @@ import (
 	"os"
 	"path"
 	"tl/task"
+  "regexp"
+  "strconv"
+  "strings"
 )
 
 var DEFAULT_FILEPATH string = path.Join(os.Getenv("HOME"), "tl.csv")
@@ -16,7 +19,10 @@ type Action struct {
 	ActionType     string
 	ToggleComplete bool
 	TaskFilepath   string
-	TaskIndex      int // change to dynamic array of indexes to handle delete range case 
+  UpdateIndex    int
+  DeleteIndex    int
+  DeleteIndexes  []int
+  DeleteRange    [2]int
 	Task           task.Task
 }
 
@@ -95,25 +101,60 @@ func ArgsToAction() *Action {
 			log.Fatal("Invalid task #")
 		}
 		cliAction.ActionType = "update"
-		cliAction.TaskIndex = *updateIndex
+		cliAction.UpdateIndex = *updateIndex
 		cliAction.Task.Text = *newTaskText
 		cliAction.ToggleComplete = *toggleComplete
 
 	} else if len(*deleteString) > 0 {
 
-    rangeRe := regexp.MustCompile("^[0-9]+\\.\\.[0-9]+")
-    commaDelimRe := regexp.MustCompile("^([0-9],)+[0-9]$")
+    singleNumRe := regexp.MustCompile("^[0-9]+$")
+    rangeRe := regexp.MustCompile("^[0-9]+\\.\\.[0-9]+$")    // 1..4
+    commaDelimRe := regexp.MustCompile("^([0-9],)+[0-9]$")  // 1,2,3,4
 
-    isRange := re.MatchString(*deleteString)
-    isCommaDelim := re.MatchString(*deleteString)
+    isSingleNum := singleNumRe.MatchString(*deleteString)
+    isRange := rangeRe.MatchString(*deleteString)
+    isCommaDelim := commaDelimRe.MatchString(*deleteString)
 
-    if isRange {
-      // 1..4
+    if isSingleNum {
+
       cliAction.ActionType = "delete"
+      cliAction.DeleteIndex := strconv.Atoi(*deleteString)
 
-    } else if isComaDelim {
-      // 1,4,7 -- no trailing comma allowed
-      cliAction.ActionType = "delete"
+    } else if isRange {
+
+      cliAction.ActionType = "delete range"
+      deleteRange := strings.Split(*deleteString, "..")
+      start, err := strconv.Atoi(deleteRange[0])
+
+      if err != nil {
+        log.Fatal(err)
+      }
+      end, err := strconv.Atoi(deleteRange[1])
+      if err != nil {
+        log.Fatal(err)
+      }
+
+      if end < start {
+        cliAction.ActionType = "help"
+      } else {
+        cliAction.DeleteRange[0] = start
+        cliAction.DeleteRange[1] = end
+      }
+
+    } else if isCommaDelim {
+
+      cliAction.ActionType = "delete comma-delim"
+      deleteIndexes := strings.Split(*deleteString, ",")
+      cliAction.DeleteIndexes = make([]int, len(deleteIndexes))
+
+      for index, s := range deleteIndexes {
+        parsedIndex, err := strconv.Atoi(s)
+        if err != nil {
+          log.Fatal(err)
+        }
+        cliAction.DeleteIndexes[index] = parsedIndex
+      }
+
 
     } else {
       // no match, print help

@@ -47,7 +47,13 @@ func main() {
 		newTasklist = append([]task.Task{cliAction.Task}, currentTasklist...)
 		task.WriteTasksToDisk(headers, newTasklist, cliAction.TaskFilepath)
 	case "delete":
-		newTasklist = task.DeleteTask(currentTasklist, cliAction.TaskIndex-1)
+		newTasklist = task.DeleteTaskByIndex(currentTasklist, cliAction.DeleteIndex)
+		task.WriteTasksToDisk(headers, newTasklist, cliAction.TaskFilepath)
+	case "delete tasks":
+		newTasklist = task.DeleteTasksByIndex(currentTasklist, cliAction.DeleteIndexes)
+		task.WriteTasksToDisk(headers, newTasklist, cliAction.TaskFilepath)
+	case "delete range":
+		newTasklist = task.DeleteTasksByRange(currentTasklist, cliAction.DeleteRange[0], cliAction.DeleteRange[1])
 		task.WriteTasksToDisk(headers, newTasklist, cliAction.TaskFilepath)
 	case "update":
 		newTasklist = task.UpdateTask(currentTasklist, cliAction.Task, cliAction.TaskIndex-1, cliAction.ToggleComplete)
