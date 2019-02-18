@@ -41,11 +41,13 @@ func ValidateRecords(records [][]string) {
 		log.Fatal("task file has no headers.")
 	}
 
-	if records[0][0] != "Name" {
+	header := records[0]
+
+	if header[0] != "Name" {
 		log.Fatal(`task file not valid. First header field should be "Name".`)
 	}
 
-	if records[0][1] != "Completed" {
+	if header[1] != "Completed" {
 		log.Fatal(`task file not valid. Second header field should be "Complete".`)
 	}
 
