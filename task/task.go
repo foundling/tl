@@ -98,12 +98,6 @@ func WriteTasksToDisk(headers []string, tasks []Task, filepath string) {
 
 }
 
-func AppendTask(tasks []Task, task Task) []Task {
-
-	return append(tasks, task)[:]
-
-}
-
 func DeleteTaskByIndex(tasks []Task, userIndex int) []Task {
 
 	appIndex := userIndex - 1
