@@ -104,7 +104,7 @@ func AppendTask(task Task, tasks []Task) []Task {
 
 func DeleteTaskByIndex(tasks []Task, userIndex int) []Task {
 
-  appIndex := userIndex - 1
+	appIndex := userIndex - 1
 
 	if appIndex < 0 || appIndex >= len(tasks) {
 		return tasks[:]
@@ -116,41 +116,41 @@ func DeleteTaskByIndex(tasks []Task, userIndex int) []Task {
 
 func DeleteTasksByIndex(tasks []Task, userIndexes []int) []Task {
 
-  sort.Sort(sort.Reverse(sort.IntSlice(userIndexes)))
+	sort.Sort(sort.Reverse(sort.IntSlice(userIndexes)))
 
-  for _, userIndex := range(userIndexes) {
-    appIndex := userIndex - 1
-    if appIndex < 0 && appIndex >= len(tasks) {
-      continue
-    }
-    tasks = DeleteTaskByIndex(tasks, userIndex)
-  }
+	for _, userIndex := range userIndexes {
+		appIndex := userIndex - 1
+		if appIndex < 0 && appIndex >= len(tasks) {
+			continue
+		}
+		tasks = DeleteTaskByIndex(tasks, userIndex)
+	}
 
-  return tasks[:]
+	return tasks[:]
 
 }
 
 func DeleteTasksByRange(tasks []Task, userStartIndex int, userEndIndex int) []Task {
 
-  appStartIndex := userStartIndex - 1  // 0-index
-  appEndIndex := userEndIndex - 1      // 0-index
+	appStartIndex := userStartIndex - 1 // 0-index
+	appEndIndex := userEndIndex - 1     // 0-index
 
-  if len(tasks) == 0 {
-    return tasks
-  }
-  if appStartIndex > appEndIndex {
-    // should error
-    return tasks
-  }
-  if appStartIndex < 0 {
-    // should error
-    appStartIndex = 0
-  }
-  if appEndIndex >= len(tasks) {
-    appEndIndex = len(tasks) - 1
-  }
+	if len(tasks) == 0 {
+		return tasks
+	}
+	if appStartIndex > appEndIndex {
+		// should error
+		return tasks
+	}
+	if appStartIndex < 0 {
+		// should error
+		appStartIndex = 0
+	}
+	if appEndIndex >= len(tasks) {
+		appEndIndex = len(tasks) - 1
+	}
 
-  return append(tasks[:appStartIndex],tasks[appEndIndex+1:]...)
+	return append(tasks[:appStartIndex], tasks[appEndIndex+1:]...)
 
 }
 
