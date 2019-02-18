@@ -61,7 +61,6 @@ func ArgsToAction() *Action {
 	newTaskText := flag.String("t", "", "task update text")
 	toggleComplete := flag.Bool("c", false, "toggle task complete status")
 
-  //flag becomes string, parse for ints
 	deleteString := flag.String("d", "", "task number to delete")
 
 	verbosePrint := flag.Bool("v", false, "print verbose information")
@@ -118,7 +117,11 @@ func ArgsToAction() *Action {
     if isSingleNum {
 
       cliAction.ActionType = "delete"
-      cliAction.DeleteIndex := strconv.Atoi(*deleteString)
+      deleteIndex, err := strconv.Atoi(*deleteString)
+      if err != nil {
+        log.Fatal(err)
+      }
+      cliAction.DeleteIndex = deleteIndex
 
     } else if isRange {
 

@@ -6,7 +6,7 @@ import (
 	"log"
 	"os"
 	"path"
-  "sort"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -51,7 +51,6 @@ func ValidateRecords(records [][]string) {
 
 }
 
-// pointer -> pointer
 func RecordsToTasks(records [][]string) []Task {
 
 	tasks := make([]Task, len(records))
@@ -103,45 +102,55 @@ func AppendTask(task Task, tasks []Task) []Task {
 
 }
 
-func DeleteTaskByIndex(tasks []Task, index int) []Task {
+func DeleteTaskByIndex(tasks []Task, userIndex int) []Task {
 
-	if index < 0 || index >= len(tasks) {
+  appIndex := userIndex - 1
+
+	if appIndex < 0 || appIndex >= len(tasks) {
 		return tasks[:]
 	}
 
-	return append(tasks[:index], tasks[index+1:]...)[:]
+	return append(tasks[:appIndex], tasks[appIndex+1:]...)[:]
 
 }
 
-func DeleteTasksByIndex(tasks []Task, indexes []int) []Task {
+func DeleteTasksByIndex(tasks []Task, userIndexes []int) []Task {
 
-  // sort and reverse indexes first
-  end := len(tasks)
+  sort.Sort(sort.Reverse(sort.IntSlice(userIndexes)))
 
-  for _, index := range sort.Reverse(sort.IntSlice(indexes)) {
-    tasks = append(tasks[:index], tasks[index+1:end]...)
-    end = index + 1
+  for _, userIndex := range(userIndexes) {
+    appIndex := userIndex - 1
+    if appIndex < 0 && appIndex >= len(tasks) {
+      continue
+    }
+    tasks = DeleteTaskByIndex(tasks, userIndex)
   }
 
-  return tasks
+  return tasks[:]
 
 }
 
-func DeleteTasksByRange(tasks []Task, userStart int, userEnd int) []Task {
+func DeleteTasksByRange(tasks []Task, userStartIndex int, userEndIndex int) []Task {
 
-  var last int
-  start := userStart - 1  // 0-index
-  end := userEnd - 1      // 0-index
+  appStartIndex := userStartIndex - 1  // 0-index
+  appEndIndex := userEndIndex - 1      // 0-index
 
-  if start < 0 || len(tasks) == 0 {
+  if len(tasks) == 0 {
     return tasks
   }
-
-  if end >= len(tasks) {
-    last = len(tasks) - 1
+  if appStartIndex > appEndIndex {
+    // should error
+    return tasks
+  }
+  if appStartIndex < 0 {
+    // should error
+    appStartIndex = 0
+  }
+  if appEndIndex >= len(tasks) {
+    appEndIndex = len(tasks) - 1
   }
 
-  return tasks[start:end+1]
+  return append(tasks[:appStartIndex],tasks[appEndIndex+1:]...)
 
 }
 

@@ -49,14 +49,14 @@ func main() {
 	case "delete":
 		newTasklist = task.DeleteTaskByIndex(currentTasklist, cliAction.DeleteIndex)
 		task.WriteTasksToDisk(headers, newTasklist, cliAction.TaskFilepath)
-	case "delete tasks":
+	case "delete comma-delim":
 		newTasklist = task.DeleteTasksByIndex(currentTasklist, cliAction.DeleteIndexes)
 		task.WriteTasksToDisk(headers, newTasklist, cliAction.TaskFilepath)
 	case "delete range":
 		newTasklist = task.DeleteTasksByRange(currentTasklist, cliAction.DeleteRange[0], cliAction.DeleteRange[1])
 		task.WriteTasksToDisk(headers, newTasklist, cliAction.TaskFilepath)
 	case "update":
-		newTasklist = task.UpdateTask(currentTasklist, cliAction.Task, cliAction.TaskIndex-1, cliAction.ToggleComplete)
+		newTasklist = task.UpdateTask(currentTasklist, cliAction.Task, cliAction.UpdateIndex-1, cliAction.ToggleComplete)
 		task.WriteTasksToDisk(headers, newTasklist, cliAction.TaskFilepath)
 	}
 
