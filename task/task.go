@@ -98,7 +98,7 @@ func WriteTasksToDisk(headers []string, tasks []Task, filepath string) {
 
 }
 
-func AppendTask(task Task, tasks []Task) []Task {
+func AppendTask(tasks []Task, task Task) []Task {
 
 	return append(tasks, task)[:]
 
@@ -156,18 +156,20 @@ func DeleteTasksByRange(tasks []Task, userStartIndex int, userEndIndex int) []Ta
 
 }
 
-func UpdateTask(tasks []Task, task Task, index int, toggleComplete bool) []Task {
+func UpdateTask(tasks []Task, taskText string, userIndex int, toggleComplete bool) []Task {
 
-	if index < 0 || index >= len(tasks) {
+	appIndex := userIndex - 1
+
+	if appIndex < 0 || appIndex >= len(tasks) {
 		return tasks[:]
 	}
 
-	if len(task.Text) > 0 {
-		tasks[index].Text = task.Text
+	if len(taskText) > 0 {
+		tasks[appIndex].Text = taskText
 	}
 
 	if toggleComplete {
-		tasks[index].Completed = !tasks[index].Completed
+		tasks[appIndex].Completed = !tasks[appIndex].Completed
 	}
 
 	return tasks[:]
