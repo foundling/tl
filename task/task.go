@@ -98,7 +98,7 @@ func WriteTasksToDisk(headers []string, tasks []Task, filepath string) {
 
 }
 
-func deleteTaskByIndex(tasks []Task, userIndex int) []Task {
+func DeleteTaskByIndex(tasks []Task, userIndex int) []Task {
 	appIndex := userIndex - 1
 	if appIndex < 0 || appIndex >= len(tasks) {
 		return tasks[:]
@@ -115,7 +115,7 @@ func DeleteTasksByIndex(tasks []Task, userIndexes []int) []Task {
 		if appIndex < 0 && appIndex >= len(tasks) {
 			continue
 		}
-		tasks = deleteTaskByIndex(tasks, userIndex)
+		tasks = DeleteTaskByIndex(tasks, userIndex)
 	}
 
 	return tasks
