@@ -66,7 +66,7 @@ func RecordsToTasks(records [][]string) []Task {
 
 	}
 
-	return tasks[:]
+	return tasks
 
 }
 
@@ -98,16 +98,12 @@ func WriteTasksToDisk(headers []string, tasks []Task, filepath string) {
 
 }
 
-func DeleteTaskByIndex(tasks []Task, userIndex int) []Task {
-
+func deleteTaskByIndex(tasks []Task, userIndex int) []Task {
 	appIndex := userIndex - 1
-
 	if appIndex < 0 || appIndex >= len(tasks) {
 		return tasks[:]
 	}
-
 	return append(tasks[:appIndex], tasks[appIndex+1:]...)[:]
-
 }
 
 func DeleteTasksByIndex(tasks []Task, userIndexes []int) []Task {
@@ -119,10 +115,10 @@ func DeleteTasksByIndex(tasks []Task, userIndexes []int) []Task {
 		if appIndex < 0 && appIndex >= len(tasks) {
 			continue
 		}
-		tasks = DeleteTaskByIndex(tasks, userIndex)
+		tasks = deleteTaskByIndex(tasks, userIndex)
 	}
 
-	return tasks[:]
+	return tasks
 
 }
 
@@ -155,7 +151,7 @@ func UpdateTask(tasks []Task, taskText string, userIndex int, toggleComplete boo
 	appIndex := userIndex - 1
 
 	if appIndex < 0 || appIndex >= len(tasks) {
-		return tasks[:]
+		return tasks
 	}
 
 	if len(taskText) > 0 {
@@ -166,7 +162,7 @@ func UpdateTask(tasks []Task, taskText string, userIndex int, toggleComplete boo
 		tasks[appIndex].Completed = !tasks[appIndex].Completed
 	}
 
-	return tasks[:]
+	return tasks
 
 }
 
@@ -176,6 +172,6 @@ func ParseTaskfile(content string) [][]string {
 	records, err := csvReader.ReadAll()
 	check(err, CSV_PARSE_FAILED)
 
-	return records[:]
+	return records
 
 }

@@ -13,22 +13,39 @@ import (
 	"tl/task"
 )
 
-var DEFAULT_FILEPATH string = path.Join(os.Getenv("HOME"), "tl.csv")
+const USAGE_TEXT string = `tl usage:
+  tl [-aduv]
+    -v
+      print tasks in verbose format
+    -a <task text to append to list>
+    -p <task text to prepend to list>
+    -u <task #> [-t updated task text] [-c]
+      update task by task #
+      -t <task text>
+      -c
+        mark complete
+    -d <task #>,...[<task #>]
+      delete task by task #, comma-separated list allowed
+    -d <task #>..<task #>
+      delete task by task-range
+
+`
+
+var default_filepath string = path.Join(os.Getenv("HOME"), "tl.csv")
 
 type Action struct {
 	ActionType     string
 	ToggleComplete bool
 	TaskFilepath   string
 	UpdateIndex    int
-	DeleteIndex    int
 	DeleteIndexes  []int
 	DeleteRange    [2]int
 	Task           task.Task
 }
 
-func InitCli(taskFilepath string) [][]string {
+func Init(taskFilepath string) [][]string {
 
-	// if file doesn't exist, create it, write headers
+	// if create file if needed and write headers
 	if _, err := os.Stat(taskFilepath); os.IsNotExist(err) {
 
 		if f, err := os.OpenFile(taskFilepath, os.O_RDWR|os.O_CREATE, 0755); err != nil {
@@ -46,13 +63,54 @@ func InitCli(taskFilepath string) [][]string {
 	records := task.ParseTaskfile(string(taskfileBytes))
 	task.ValidateRecords(records)
 
-	return records[:]
+	return records
 
 }
 
-func ArgsToAction() *Action {
+func Run(records [][]string, cliAction *Action) {
 
-	taskFilepath := flag.String("f", DEFAULT_FILEPATH, "alternate task data filepath to ~/tl.csv")
+	headers := records[0]
+	currentTasklist := task.RecordsToTasks(records[1:])
+
+	newTasklist := make([]task.Task, len(currentTasklist))
+	switch cliAction.ActionType {
+
+	case "help":
+		fmt.Println(USAGE_TEXT)
+		return
+
+	case "print":
+		PrintTasks(currentTasklist)
+		return
+
+	case "printv":
+		PrintTasksVerbose(currentTasklist)
+		return
+
+	case "append":
+		newTasklist = append(currentTasklist, cliAction.Task)
+
+	case "prepend":
+		newTasklist = append([]task.Task{cliAction.Task}, currentTasklist...)
+
+	case "delete":
+		newTasklist = task.DeleteTasksByIndex(currentTasklist, cliAction.DeleteIndexes)
+
+	case "delete range":
+		newTasklist = task.DeleteTasksByRange(currentTasklist, cliAction.DeleteRange[0], cliAction.DeleteRange[1])
+
+	case "update":
+		newTasklist = task.UpdateTask(currentTasklist, cliAction.Task.Text, cliAction.UpdateIndex, cliAction.ToggleComplete)
+
+	}
+
+	task.WriteTasksToDisk(headers, newTasklist, cliAction.TaskFilepath)
+
+}
+
+func ParseAction() *Action {
+
+	taskFilepath := flag.String("f", default_filepath, "alternate task data filepath to ~/tl.csv")
 
 	taskTextAppend := flag.String("a", "", "task text to append")
 	taskTextPrepend := flag.String("p", "", "task to prepend")
@@ -74,31 +132,32 @@ func ArgsToAction() *Action {
 
 	if *usage {
 
-		// usage
 		cliAction.ActionType = "help"
+
 	} else if len(*taskTextAppend) > 0 {
 
-		// add to back
 		cliAction.ActionType = "append"
 		cliAction.Task.Text = *taskTextAppend
+
 		if *toggleComplete {
 			cliAction.Task.Completed = true
 		}
 
 	} else if len(*taskTextPrepend) > 0 {
 
-		// add to front
 		cliAction.ActionType = "prepend"
 		cliAction.Task.Text = *taskTextPrepend
+
 		if *toggleComplete {
 			cliAction.Task.Completed = true
 		}
+
 	} else if *updateIndex != -1 {
 
-		// update task
 		if *updateIndex < -1 {
 			log.Fatal("Invalid task #")
 		}
+
 		cliAction.ActionType = "update"
 		cliAction.UpdateIndex = *updateIndex
 		cliAction.Task.Text = *newTaskText
@@ -106,24 +165,13 @@ func ArgsToAction() *Action {
 
 	} else if len(*deleteString) > 0 {
 
-		singleNumRe := regexp.MustCompile("^[0-9]+$")
-		rangeRe := regexp.MustCompile("^[0-9]+\\.\\.[0-9]+$")  // 1..4
-		commaDelimRe := regexp.MustCompile("^([0-9],)+[0-9]$") // 1,2,3,4
+		rangeRe := regexp.MustCompile("^[0-9]+\\.\\.[0-9]+$")   // 1..4
+		commaDelimRe := regexp.MustCompile("^(\\d+(,\\d+)*)+$") // 1 or 1,2,3 etc
 
-		isSingleNum := singleNumRe.MatchString(*deleteString)
 		isRange := rangeRe.MatchString(*deleteString)
 		isCommaDelim := commaDelimRe.MatchString(*deleteString)
 
-		if isSingleNum {
-
-			cliAction.ActionType = "delete"
-			deleteIndex, err := strconv.Atoi(*deleteString)
-			if err != nil {
-				log.Fatal(err)
-			}
-			cliAction.DeleteIndex = deleteIndex
-
-		} else if isRange {
+		if isRange {
 
 			cliAction.ActionType = "delete range"
 			deleteRange := strings.Split(*deleteString, "..")
@@ -132,7 +180,9 @@ func ArgsToAction() *Action {
 			if err != nil {
 				log.Fatal(err)
 			}
+
 			end, err := strconv.Atoi(deleteRange[1])
+
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -140,13 +190,15 @@ func ArgsToAction() *Action {
 			if end < start {
 				cliAction.ActionType = "help"
 			} else {
+
 				cliAction.DeleteRange[0] = start
 				cliAction.DeleteRange[1] = end
+
 			}
 
 		} else if isCommaDelim {
 
-			cliAction.ActionType = "delete comma-delim"
+			cliAction.ActionType = "delete"
 			deleteIndexes := strings.Split(*deleteString, ",")
 			cliAction.DeleteIndexes = make([]int, len(deleteIndexes))
 
@@ -159,13 +211,11 @@ func ArgsToAction() *Action {
 			}
 
 		} else {
-			// no match, print help
 			cliAction.ActionType = "help"
 		}
 
 	} else {
 
-		// print tasks
 		if *verbosePrint {
 			cliAction.ActionType = "printv"
 		} else {
@@ -182,6 +232,7 @@ func PrintTasks(tasks []task.Task) {
 
 	fmt.Println("total", len(tasks))
 	for i, task := range tasks {
+
 		var icon string
 		if task.Completed {
 			icon = "\033[12;32m✓\033[0m"
@@ -191,6 +242,7 @@ func PrintTasks(tasks []task.Task) {
 		fmt.Printf("%d: %s ", i+1, task.Text)
 		fmt.Print(icon)
 		fmt.Print("\n")
+
 	}
 
 }
