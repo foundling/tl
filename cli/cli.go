@@ -40,7 +40,7 @@ type Action struct {
 	UpdateIndex    int
 	DeleteIndexes  []int
 	DeleteRange    [2]int
-	Task           task.Task
+	Tasks          []task.Task
 }
 
 func Init(taskFilepath string) [][]string {
@@ -67,65 +67,20 @@ func Init(taskFilepath string) [][]string {
 
 }
 
-func Run(records [][]string, cliAction *Action) {
-
-	headers := records[0]
-	currentTasklist := task.RecordsToTasks(records[1:])
-
-	newTasklist := make([]task.Task, len(currentTasklist))
-	switch cliAction.ActionType {
-
-	case "help":
-		fmt.Println(USAGE_TEXT)
-		return
-
-	case "print":
-		PrintTasks(currentTasklist)
-		return
-
-	case "printv":
-		PrintTasksVerbose(currentTasklist)
-		return
-
-	case "append":
-		newTasklist = append(currentTasklist, cliAction.Task)
-
-	case "prepend":
-		newTasklist = append([]task.Task{cliAction.Task}, currentTasklist...)
-
-	case "delete":
-		newTasklist = task.DeleteTasksByIndex(currentTasklist, cliAction.DeleteIndexes)
-
-	case "delete range":
-		newTasklist = task.DeleteTasksByRange(currentTasklist, cliAction.DeleteRange[0], cliAction.DeleteRange[1])
-
-	case "update":
-		newTasklist = task.UpdateTask(currentTasklist, cliAction.Task.Text, cliAction.UpdateIndex, cliAction.ToggleComplete)
-
-	}
-
-	task.WriteTasksToDisk(headers, newTasklist, cliAction.TaskFilepath)
-
-}
-
 func ParseAction() *Action {
 
 	taskFilepath := flag.String("f", default_filepath, "alternate task data filepath to ~/tl.csv")
-
 	taskTextAppend := flag.String("a", "", "task text to append")
 	taskTextPrepend := flag.String("p", "", "task to prepend")
-
 	updateIndex := flag.Int("u", -1, "task number to update")
 	newTaskText := flag.String("t", "", "task update text")
 	toggleComplete := flag.Bool("c", false, "toggle task complete status")
-
 	deleteString := flag.String("d", "", "task number to delete")
-
 	verbosePrint := flag.Bool("v", false, "print verbose information")
-
 	usage := flag.Bool("h", false, "usage")
 
 	flag.Parse()
+	newTaskStrings := flag.Args()
 
 	cliAction := Action{}
 	cliAction.TaskFilepath = *taskFilepath
@@ -137,19 +92,21 @@ func ParseAction() *Action {
 	} else if len(*taskTextAppend) > 0 {
 
 		cliAction.ActionType = "append"
-		cliAction.Task.Text = *taskTextAppend
 
-		if *toggleComplete {
-			cliAction.Task.Completed = true
+		newTaskStrings := append([]string{*taskTextAppend}, newTaskStrings...)
+		for _, text := range newTaskStrings {
+			task := task.Task{text, false}
+			cliAction.Tasks = append(cliAction.Tasks, task)
 		}
 
 	} else if len(*taskTextPrepend) > 0 {
 
 		cliAction.ActionType = "prepend"
-		cliAction.Task.Text = *taskTextPrepend
 
-		if *toggleComplete {
-			cliAction.Task.Completed = true
+		newTaskStrings := append([]string{*taskTextPrepend}, newTaskStrings...)
+		for _, text := range newTaskStrings {
+			task := task.Task{text, false}
+			cliAction.Tasks = append(cliAction.Tasks, task)
 		}
 
 	} else if *updateIndex != -1 {
@@ -160,7 +117,7 @@ func ParseAction() *Action {
 
 		cliAction.ActionType = "update"
 		cliAction.UpdateIndex = *updateIndex
-		cliAction.Task.Text = *newTaskText
+		cliAction.Tasks = append(cliAction.Tasks, task.Task{*newTaskText, false})
 		cliAction.ToggleComplete = *toggleComplete
 
 	} else if len(*deleteString) > 0 {
@@ -225,6 +182,47 @@ func ParseAction() *Action {
 	}
 
 	return &cliAction
+
+}
+
+func Run(records [][]string, cliAction *Action) {
+
+	headers := records[0]
+	currentTasklist := task.RecordsToTasks(records[1:])
+
+	newTasklist := make([]task.Task, len(currentTasklist))
+	switch cliAction.ActionType {
+
+	case "help":
+		fmt.Println(USAGE_TEXT)
+		return
+
+	case "print":
+		PrintTasks(currentTasklist)
+		return
+
+	case "printv":
+		PrintTasksVerbose(currentTasklist)
+		return
+
+	case "append":
+		newTasklist = append(currentTasklist, cliAction.Tasks...)
+
+	case "prepend":
+		newTasklist = append(cliAction.Tasks, currentTasklist...)
+
+	case "delete":
+		newTasklist = task.DeleteTasksByIndex(currentTasklist, cliAction.DeleteIndexes)
+
+	case "delete range":
+		newTasklist = task.DeleteTasksByRange(currentTasklist, cliAction.DeleteRange[0], cliAction.DeleteRange[1])
+
+	case "update":
+		newTasklist = task.UpdateTask(currentTasklist, cliAction.Tasks[0].Text, cliAction.UpdateIndex, cliAction.ToggleComplete)
+
+	}
+
+	task.WriteTasksToDisk(headers, newTasklist, cliAction.TaskFilepath)
 
 }
 
