@@ -80,7 +80,7 @@ func ParseAction() *Action {
 	usage := flag.Bool("h", false, "usage")
 
 	flag.Parse()
-	newTaskStrings := flag.Args()
+	unparsedArgs := flag.Args()
 
 	cliAction := Action{}
 	cliAction.TaskFilepath = *taskFilepath
@@ -93,7 +93,7 @@ func ParseAction() *Action {
 
 		cliAction.ActionType = "append"
 
-		newTaskStrings := append([]string{*taskTextAppend}, newTaskStrings...)
+		newTaskStrings := append([]string{*taskTextAppend}, unparsedArgs...)
 		for _, text := range newTaskStrings {
 			task := task.Task{text, false}
 			cliAction.Tasks = append(cliAction.Tasks, task)
@@ -103,7 +103,7 @@ func ParseAction() *Action {
 
 		cliAction.ActionType = "prepend"
 
-		newTaskStrings := append([]string{*taskTextPrepend}, newTaskStrings...)
+		newTaskStrings := append([]string{*taskTextPrepend}, unparsedArgs...)
 		for _, text := range newTaskStrings {
 			task := task.Task{text, false}
 			cliAction.Tasks = append(cliAction.Tasks, task)
