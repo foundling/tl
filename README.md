@@ -9,17 +9,22 @@
 ## Usage
 
 ```
-tl [-aduv]
-  -v 
-    print tasks in verbose format
-  -a <text>
-  -u <task #> [-t updated task text] [-c]
-    update task by task #
-    -t <task text>
-    -c
-      mark complete
-  -d <task #>
-    delete task by task #
+Usage of tl:
+  -a string
+    	task text to append
+  -c	toggle task complete status
+  -d string
+    	task number to delete
+  -f string
+    	alternate task data filepath to ~/tl.csv (default "/Users/alex/tl.csv")
+  -h	usage
+  -p string
+    	task to prepend
+  -t string
+    	task update text
+  -u int
+    	task number to update (default -1)
+  -v	print verbose information
 ```
 
 ## `tl` In Action
